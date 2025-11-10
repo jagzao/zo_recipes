@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  # Gas Camera
+  edgecv-gas:
+    build: .
+    container_name: kitcheneye-gas
+    env_file:
+      - .env.gas
+    devices:
+      - /dev/video0:/dev/video0  # Adjust camera device as needed
+    volumes:
+      - ./captures:/app/captures
+      - ./models:/app/models:ro
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  # Fridge Camera
+  edgecv-fridge:
+    build: .
+    container_name: kitcheneye-fridge
+    env_file:
+      - .env.fridge
+    devices:
+      - /dev/video1:/dev/video1  # Adjust camera device as needed
+    volumes:
+      - ./captures:/app/captures
+      - ./models:/app/models:ro
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

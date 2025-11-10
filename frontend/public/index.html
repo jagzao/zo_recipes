@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="KitchenEye - Smart Kitchen Monitoring with Gas & Fridge Inventory">
+  <meta name="theme-color" content="#4F46E5">
+
+  <title>KitchenEye - Smart Kitchen</title>
+
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" type="image/png" href="/icons/icon-192x192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <!-- App Container -->
+  <div id="app">
+    <!-- Loading Screen -->
+    <div id="loading" class="loading-screen">
+      <div class="spinner"></div>
+      <p>Cargando KitchenEye...</p>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="screen hidden">
+      <div class="login-container">
+        <div class="logo">
+          <h1>🍳 KitchenEye</h1>
+          <p>Smart Kitchen Monitoring</p>
+        </div>
+
+        <form id="login-form" class="form">
+          <div class="form-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" name="email" required placeholder="tu@email.com">
+          </div>
+
+          <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+        </form>
+
+        <div class="divider">o</div>
+
+        <button id="signup-btn" class="btn btn-secondary">Crear Cuenta Nueva</button>
+
+        <div id="signup-form-container" class="hidden">
+          <form id="signup-form" class="form">
+            <div class="form-group">
+              <label for="signup-email">Email</label>
+              <input type="email" id="signup-email" required>
+            </div>
+            <div class="form-group">
+              <label for="signup-name">Nombre (opcional)</label>
+              <input type="text" id="signup-name">
+            </div>
+            <div class="form-group">
+              <label for="tenant-name">Nombre de tu Hogar/Negocio</label>
+              <input type="text" id="tenant-name" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Registrar</button>
+            <button type="button" id="cancel-signup" class="btn btn-text">Cancelar</button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main App Screen -->
+    <div id="main-screen" class="screen hidden">
+      <!-- Header -->
+      <header class="header">
+        <div class="header-content">
+          <h1>🍳 KitchenEye</h1>
+          <button id="menu-btn" class="btn-icon">☰</button>
+        </div>
+      </header>
+
+      <!-- Navigation -->
+      <nav id="nav-menu" class="nav-menu">
+        <a href="#home" class="nav-link active" data-page="home">🏠 Inicio</a>
+        <a href="#recipes" class="nav-link" data-page="recipes">📖 Recetas</a>
+        <a href="#status" class="nav-link" data-page="status">📊 Estado</a>
+        <a href="#alerts" class="nav-link" data-page="alerts">🔔 Alertas</a>
+        <a href="#settings" class="nav-link" data-page="settings">⚙️ Ajustes</a>
+      </nav>
+
+      <!-- Page Content -->
+      <main id="page-content" class="page-content">
+        <!-- Content will be dynamically loaded here -->
+      </main>
+    </div>
+  </div>
+
+  <!-- Toast Notifications -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <script src="/app.js"></script>
+</body>
+</html>

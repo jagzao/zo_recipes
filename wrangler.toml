@@ -1,0 +1,44 @@
+# KitchenEye - Cloudflare Workers Configuration
+name = "kitcheneye-api"
+main = "dist/workers/api/index.js"
+compatibility_date = "2024-01-01"
+node_compat = true
+
+# D1 Database
+[[d1_databases]]
+binding = "DB"
+database_name = "kitcheneye-db"
+database_id = ""  # Will be filled after creation
+
+# KV Namespace for configuration and feature flags
+[[kv_namespaces]]
+binding = "CONFIG_KV"
+id = ""  # Will be filled after creation
+
+# R2 Bucket for images/thumbnails
+[[r2_buckets]]
+binding = "IMAGES_R2"
+bucket_name = "kitcheneye-images"
+
+# Environment variables
+[vars]
+ENVIRONMENT = "development"
+DEFAULT_TIMEZONE = "America/Mexico_City"
+JWT_SECRET_KEY = "changeme-in-production"  # Use secrets in production
+
+# Cron Triggers
+[triggers]
+crons = [
+  "0 5 * * *",     # Gas monitoring at 05:00 daily (Mexico City time)
+  "0 */4 * * *"    # Fridge monitoring every 4 hours
+]
+
+# Routes for API
+[[routes]]
+pattern = "api.kitcheneye.com/*"
+zone_name = "kitcheneye.com"
+
+# Durable Objects (for future use with real-time features)
+# [[durable_objects.bindings]]
+# name = "CAMERA_SESSION"
+# class_name = "CameraSession"

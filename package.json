@@ -1,0 +1,29 @@
+{
+  "name": "kitcheneye",
+  "version": "0.1.0",
+  "description": "KitchenEye - Smart Kitchen Monitoring PWA",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "wrangler pages dev frontend --compatibility-date=2024-01-01",
+    "dev:worker": "wrangler dev",
+    "build": "npm run build:frontend && npm run build:worker",
+    "build:frontend": "cd frontend && npm run build",
+    "build:worker": "esbuild workers/api/index.ts --bundle --outdir=dist/workers/api --format=esm --platform=node --target=es2020",
+    "deploy": "wrangler deploy",
+    "db:migrate": "wrangler d1 migrations apply kitcheneye-db",
+    "db:create": "wrangler d1 create kitcheneye-db",
+    "test": "vitest",
+    "lint": "eslint . --ext .ts,.tsx,.js,.jsx"
+  },
+  "dependencies": {
+    "@cloudflare/workers-types": "^4.20241127.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.11",
+    "typescript": "^5.3.3",
+    "vitest": "^1.1.0",
+    "wrangler": "^3.22.1",
+    "eslint": "^8.56.0"
+  }
+}
