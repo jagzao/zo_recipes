@@ -213,8 +213,22 @@ async function loadPage(page) {
     case 'alerts':
       content.innerHTML = await renderAlertsPage();
       break;
+    case 'cameras':
+      content.innerHTML = await renderCamerasPage();
+      break;
+    case 'profiles':
+      content.innerHTML = await renderProfilesPage();
+      break;
+    case 'inventory-mgmt':
+      content.innerHTML = await renderInventoryManagementPage();
+      break;
+    case 'reports':
+      content.innerHTML = await renderReportsPage();
+      break;
     case 'settings':
-      content.innerHTML = renderSettingsPage();
+      content.innerHTML = renderSettingsPageEnhanced();
+      // Load tenant settings after rendering
+      setTimeout(() => loadTenantSettings(), 100);
       break;
     default:
       content.innerHTML = '<p>Página no encontrada</p>';
