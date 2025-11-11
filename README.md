@@ -56,6 +56,8 @@ Built on **Cloudflare's free tier** (Workers, Pages, D1, KV, R2) for **zero-cost
   - Account and tenant management
   - Role-based access control (Owner, Admin, Ops, Viewer)
   - Usage metering and free tier limits
+  - Team member invitations and management
+  - Rate limiting at 3 levels (IP, tenant, camera)
 
 - **Gas Monitoring**
   - Visual calibration with physical marker
@@ -68,6 +70,7 @@ Built on **Cloudflare's free tier** (Workers, Pages, D1, KV, R2) for **zero-cost
   - Capture every 4 hours (configurable)
   - Smoothing with consecutive detection
   - Critical item tracking
+  - Manual inventory management UI
 
 - **Smart Recipe Matching**
   - Score recipes based on available ingredients
@@ -80,12 +83,32 @@ Built on **Cloudflare's free tier** (Workers, Pages, D1, KV, R2) for **zero-cost
   - Offline support with service worker
   - Beautiful recipe cards with photos
   - Real-time alerts and status
+  - Dark mode with system preference detection
+  - 9 management pages (home, recipes, status, alerts, settings, cameras, profiles, inventory, reports)
+
+- **Notifications**
+  - Web push subscription support
+  - Customizable notification preferences
+  - Alert type filtering
+  - Email and push toggle per user
+
+- **Reports & Analytics**
+  - CSV and JSON export formats
+  - 4 report types (missing items, consumption, gas history, alerts summary)
+  - Configurable date ranges
+  - Download from PWA
 
 - **Edge CV Application**
   - Python-based computer vision
   - Runs on Raspberry Pi or similar devices
   - Local processing with cloud sync
   - Automatic retry and health checks
+
+- **Security & Validation**
+  - Payload signing with HMAC-SHA256
+  - Input sanitization (XSS prevention)
+  - Schema validation
+  - Audit logging for all sensitive actions
 
 ## Getting Started
 
@@ -151,16 +174,37 @@ zo_recipes/
 │   └── public/
 │       ├── index.html
 │       ├── app.js
+│       ├── pages.js       # Management page renderers
+│       ├── actions.js     # Form handlers & modals
 │       ├── styles.css
+│       ├── dark-mode.js   # Theme toggle logic
 │       ├── manifest.json
 │       └── sw.js
 ├── workers/               # Cloudflare Workers (API)
 │   ├── api/
 │   │   ├── index.ts       # Main worker entry
 │   │   ├── cron.ts        # Scheduled jobs
-│   │   ├── middleware/    # Auth middleware
-│   │   └── routes/        # API routes
-│   └── utils/             # Shared utilities
+│   │   ├── middleware/
+│   │   │   ├── auth.ts    # Authentication & RBAC
+│   │   │   └── ratelimit.ts  # Rate limiting
+│   │   ├── routes/
+│   │   │   ├── auth.ts
+│   │   │   ├── cameras.ts
+│   │   │   ├── profiles.ts
+│   │   │   ├── inventory.ts
+│   │   │   ├── reports.ts
+│   │   │   ├── tenants.ts
+│   │   │   ├── notifications.ts
+│   │   │   ├── ingest.ts
+│   │   │   ├── recipes.ts
+│   │   │   └── status.ts
+│   │   └── __tests__/
+│   │       └── api.test.ts  # Test suite
+│   └── utils/
+│       ├── jwt.ts
+│       ├── db.ts
+│       ├── response.ts
+│       └── validation.ts  # Security & validation
 ├── edge-cv/               # Edge Computer Vision
 │   ├── main.py            # Entry point
 │   ├── camera.py          # Camera interface
@@ -172,7 +216,9 @@ zo_recipes/
 ├── shared/                # Shared TypeScript types
 │   └── types.ts
 ├── migrations/            # D1 database migrations
-│   └── 0001_initial_schema.sql
+│   ├── 0001_initial_schema.sql
+│   └── 0002_notifications.sql
+├── vitest.config.ts       # Test configuration
 └── README.md
 ```
 
@@ -199,6 +245,49 @@ zo_recipes/
 ### Alerts
 - `GET /api/alerts` - List alerts
 - `POST /api/alerts/:id/ack` - Acknowledge alert
+
+### Cameras
+- `GET /api/cameras` - List cameras
+- `POST /api/cameras` - Create camera
+- `GET /api/cameras/:id` - Get camera
+- `PATCH /api/cameras/:id` - Update camera
+- `DELETE /api/cameras/:id` - Delete camera
+- `POST /api/cameras/:id/calibrate` - Calibrate camera
+
+### Profiles
+- `GET /api/profiles` - List profiles
+- `POST /api/profiles` - Create profile
+- `GET /api/profiles/:id` - Get profile
+- `PATCH /api/profiles/:id` - Update profile
+- `DELETE /api/profiles/:id` - Delete profile
+
+### Inventory
+- `GET /api/inventory/items` - List inventory items
+- `POST /api/inventory/items` - Create inventory item
+- `GET /api/inventory/items/:id` - Get inventory item
+- `PATCH /api/inventory/items/:id` - Update inventory item
+- `DELETE /api/inventory/items/:id` - Delete inventory item
+- `POST /api/inventory/items/:id/snapshot` - Create snapshot
+
+### Reports
+- `GET /api/reports/missing-items` - Missing items report
+- `GET /api/reports/consumption` - Consumption report
+- `GET /api/reports/gas-history` - Gas history report
+- `GET /api/reports/alerts-summary` - Alerts summary report
+
+### Tenants
+- `GET /api/tenants/:id` - Get tenant
+- `PATCH /api/tenants/:id` - Update tenant
+- `GET /api/tenants/:id/members` - List members
+- `POST /api/tenants/:id/invite` - Invite user
+- `DELETE /api/tenants/:id/members/:userId` - Remove member
+- `PATCH /api/tenants/:id/members/:userId/role` - Update member role
+- `GET /api/tenants/:id/usage` - Get usage metrics
+
+### Notifications
+- `POST /api/notifications/subscribe` - Subscribe to push notifications
+- `GET /api/notifications/preferences` - Get notification preferences
+- `PATCH /api/notifications/preferences` - Update notification preferences
 
 ## Configuration
 
