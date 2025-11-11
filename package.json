@@ -13,13 +13,16 @@
     "deploy": "wrangler deploy",
     "db:migrate": "wrangler d1 migrations apply kitcheneye-db",
     "db:create": "wrangler d1 create kitcheneye-db",
-    "test": "vitest",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint . --ext .ts,.tsx,.js,.jsx"
   },
   "dependencies": {
     "@cloudflare/workers-types": "^4.20241127.0"
   },
   "devDependencies": {
+    "@vitest/coverage-v8": "^1.1.0",
     "esbuild": "^0.19.11",
     "typescript": "^5.3.3",
     "vitest": "^1.1.0",

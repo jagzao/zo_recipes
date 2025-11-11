@@ -24,6 +24,25 @@
   --radius-lg: 0.75rem;
 }
 
+/* Dark Mode Theme */
+[data-theme="dark"] {
+  --primary-color: #818CF8;
+  --primary-dark: #6366F1;
+  --primary-light: #A5B4FC;
+  --secondary-color: #34D399;
+  --danger-color: #F87171;
+  --warning-color: #FBBF24;
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --border-color: #374151;
+  --bg-primary: #1F2937;
+  --bg-secondary: #111827;
+  --bg-dark: #030712;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.5);
+}
+
 * {
   margin: 0;
   padding: 0;

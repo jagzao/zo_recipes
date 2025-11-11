@@ -60,6 +60,11 @@ import {
   updateMemberRole,
   getTenantUsage,
 } from './routes/tenants';
+import {
+  subscribe as subscribeNotifications,
+  getPreferences as getNotificationPreferences,
+  updatePreferences as updateNotificationPreferences,
+} from './routes/notifications';
 
 interface Env {
   DB: D1Database;
@@ -363,6 +368,21 @@ async function router(
   if (path.startsWith('/api/recipes/') && method === 'GET') {
     const recipeId = parts[2];
     return await getRecipe(request, env, context.tenantId, recipeId);
+  }
+
+  // Notification routes
+  if (parts[0] === 'api' && parts[1] === 'notifications') {
+    if (parts[2] === 'subscribe' && method === 'POST') {
+      return await subscribeNotifications(request, env, context.tenantId, context.userId);
+    }
+
+    if (parts[2] === 'preferences' && method === 'GET') {
+      return await getNotificationPreferences(request, env, context.tenantId, context.userId);
+    }
+
+    if (parts[2] === 'preferences' && method === 'PATCH') {
+      return await updateNotificationPreferences(request, env, context.tenantId, context.userId);
+    }
   }
 
   // Not found
