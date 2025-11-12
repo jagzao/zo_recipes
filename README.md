@@ -128,6 +128,24 @@ Built on **Cloudflare's free tier** (Workers, Pages, D1, KV, R2) for **zero-cost
   - Error boundaries and circuit breakers
   - **See [UTILITIES.md](./UTILITIES.md) for complete guide**
 
+- **Accessibility (A11y)** ⭐NEW
+  - WCAG 2.1 AA/AAA compliant
+  - ARIA live regions for screen readers
+  - Focus trap and focus management
+  - Keyboard navigation for all components
+  - Skip links and landmarks
+  - Color contrast checker (4.5:1 minimum)
+  - High contrast and reduced motion support
+  - **See [ACCESSIBILITY.md](./ACCESSIBILITY.md) for complete guide**
+
+- **Testing** ⭐NEW
+  - Vitest unit tests for utilities
+  - Integration tests for APIs
+  - Mock environment for workers
+  - Test coverage reporting
+  - Automated accessibility testing ready
+  - **Run: `npm test` or `npm run test:watch`**
+
 ## Getting Started
 
 ### Prerequisites

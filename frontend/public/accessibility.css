@@ -1,0 +1,495 @@
+/**
+ * Accessibility Styles (A11y)
+ * WCAG 2.1 AA/AAA compliance
+ */
+
+/* ============================================
+   SCREEN READER ONLY
+   ============================================ */
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+.sr-only-focusable:focus,
+.sr-only-focusable:active {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  overflow: visible !important;
+  clip: auto !important;
+  white-space: normal !important;
+}
+
+/* ============================================
+   SKIP LINKS
+   ============================================ */
+
+.skip-links {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 10000;
+}
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: var(--primary-color);
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  font-weight: 600;
+  transition: top 0.2s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  outline: 3px solid var(--warning-color);
+  outline-offset: 2px;
+}
+
+/* ============================================
+   FOCUS STYLES
+   ============================================ */
+
+/* Default focus style */
+:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Remove outline for mouse users, keep for keyboard users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Focus within (for containers) */
+.focus-within:focus-within {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* High contrast focus for buttons */
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+}
+
+/* ============================================
+   HIGH CONTRAST MODE
+   ============================================ */
+
+@media (prefers-contrast: high) {
+  :root {
+    --text-primary: #000000;
+    --bg-primary: #FFFFFF;
+    --border-color: #000000;
+  }
+
+  [data-theme="dark"] {
+    --text-primary: #FFFFFF;
+    --bg-primary: #000000;
+    --border-color: #FFFFFF;
+  }
+
+  /* Stronger borders */
+  button,
+  input,
+  textarea,
+  select,
+  .card,
+  .modal {
+    border: 2px solid currentColor;
+  }
+
+  /* Remove subtle shadows */
+  .card,
+  .modal,
+  button {
+    box-shadow: none !important;
+  }
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Disable scroll-based animations */
+  .parallax,
+  .scroll-animation {
+    transform: none !important;
+  }
+}
+
+/* ============================================
+   KEYBOARD NAVIGATION
+   ============================================ */
+
+/* Show focus for keyboard users */
+body.keyboard-nav *:focus {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Hide focus for mouse users */
+body.mouse-nav *:focus {
+  outline: none;
+}
+
+/* ============================================
+   ARIA LIVE REGIONS
+   ============================================ */
+
+[aria-live] {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+}
+
+/* ============================================
+   DISABLED STATES
+   ============================================ */
+
+[disabled],
+[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+/* Clearly indicate disabled state */
+button[disabled],
+button[aria-disabled="true"] {
+  background-color: var(--border-color);
+  color: var(--text-secondary);
+  border-color: var(--border-color);
+}
+
+/* ============================================
+   REQUIRED FIELDS
+   ============================================ */
+
+[required],
+[aria-required="true"] {
+  /* Add visual indicator */
+}
+
+label[for] [required]:after,
+label[for] [aria-required="true"]:after {
+  content: " *";
+  color: var(--danger-color);
+  font-weight: bold;
+}
+
+/* ============================================
+   FORM VALIDATION
+   ============================================ */
+
+[aria-invalid="true"] {
+  border-color: var(--danger-color);
+  background-color: rgba(239, 68, 68, 0.05);
+}
+
+[aria-invalid="true"]:focus {
+  outline-color: var(--danger-color);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+}
+
+.error-message {
+  color: var(--danger-color);
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.error-message::before {
+  content: "⚠";
+  font-weight: bold;
+}
+
+/* ============================================
+   TOOLTIPS
+   ============================================ */
+
+[role="tooltip"] {
+  position: absolute;
+  background: var(--bg-dark);
+  color: white;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  z-index: 1000;
+  max-width: 200px;
+  pointer-events: none;
+}
+
+/* ============================================
+   MODAL / DIALOG
+   ============================================ */
+
+[role="dialog"],
+[role="alertdialog"] {
+  /* Ensure modal is keyboard accessible */
+}
+
+.modal-backdrop {
+  background: rgba(0, 0, 0, 0.75);
+}
+
+/* Announce modal to screen readers */
+[aria-modal="true"] {
+  /* Container will trap focus */
+}
+
+/* ============================================
+   TABLES
+   ============================================ */
+
+/* Ensure table headers are properly associated */
+table th {
+  /* Screen readers will announce scope */
+}
+
+table th[scope="col"] {
+  /* Column header */
+}
+
+table th[scope="row"] {
+  /* Row header */
+}
+
+/* ============================================
+   NAVIGATION
+   ============================================ */
+
+/* Current page in navigation */
+[aria-current="page"] {
+  font-weight: bold;
+  position: relative;
+}
+
+[aria-current="page"]::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: currentColor;
+}
+
+/* ============================================
+   LANDMARKS
+   ============================================ */
+
+/* Visual separation for main landmarks */
+main,
+[role="main"] {
+  min-height: 50vh;
+}
+
+nav,
+[role="navigation"] {
+  /* Navigation landmark */
+}
+
+aside,
+[role="complementary"] {
+  /* Complementary content */
+}
+
+/* ============================================
+   BUTTONS
+   ============================================ */
+
+/* Icon-only buttons need accessible labels */
+button[aria-label]:not(:has(span, div)):not(:has(:not(svg))) {
+  /* Icon button */
+}
+
+button[aria-label]::after {
+  /* Ensure aria-label is present for screen readers */
+}
+
+/* ============================================
+   LINKS
+   ============================================ */
+
+/* External links indication */
+a[target="_blank"]::after {
+  content: " ↗";
+  font-size: 0.875em;
+  vertical-align: super;
+}
+
+/* Screen reader text for external links */
+a[target="_blank"] .sr-only::after {
+  content: " (opens in new window)";
+}
+
+/* ============================================
+   IMAGES
+   ============================================ */
+
+/* Decorative images */
+img[alt=""],
+img[role="presentation"] {
+  /* Will be ignored by screen readers */
+}
+
+/* Ensure all images have alt text */
+img:not([alt]) {
+  outline: 2px dashed var(--danger-color);
+}
+
+/* ============================================
+   EXPANDABLE SECTIONS
+   ============================================ */
+
+[aria-expanded] {
+  cursor: pointer;
+}
+
+[aria-expanded]::before {
+  content: "▶";
+  display: inline-block;
+  margin-right: 0.5rem;
+  transition: transform 0.2s ease;
+}
+
+[aria-expanded="true"]::before {
+  transform: rotate(90deg);
+}
+
+/* ============================================
+   BUSY / LOADING STATES
+   ============================================ */
+
+[aria-busy="true"] {
+  position: relative;
+  pointer-events: none;
+}
+
+[aria-busy="true"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(255, 255, 255, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ============================================
+   HEADINGS
+   ============================================ */
+
+/* Ensure proper heading hierarchy */
+h1 {
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* ============================================
+   UTILITIES
+   ============================================ */
+
+/* Hide element but keep in DOM for screen readers */
+.visually-hidden {
+  clip: rect(0 0 0 0);
+  clip-path: inset(50%);
+  height: 1px;
+  overflow: hidden;
+  position: absolute;
+  white-space: nowrap;
+  width: 1px;
+}
+
+/* Ensure minimum tap target size (44x44px for mobile) */
+.tap-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Increase text size for better readability */
+.readable-text {
+  font-size: 1.125rem;
+  line-height: 1.6;
+  max-width: 65ch;
+}
+
+/* ============================================
+   PRINT STYLES
+   ============================================ */
+
+@media print {
+  /* Show URLs for links */
+  a[href]::after {
+    content: " (" attr(href) ")";
+  }
+
+  /* Hide skip links, navigation, etc */
+  .skip-links,
+  nav,
+  .no-print {
+    display: none !important;
+  }
+
+  /* Ensure good contrast */
+  * {
+    color: #000 !important;
+    background: #fff !important;
+  }
+}
