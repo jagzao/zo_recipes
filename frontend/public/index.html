@@ -8,11 +8,29 @@
 
   <title>KitchenEye - Smart Kitchen</title>
 
+  <!-- Performance hints -->
+  <link rel="preconnect" href="https://api.kitcheneye.com">
+  <link rel="dns-prefetch" href="https://api.kitcheneye.com">
+
+  <!-- PWA -->
   <link rel="manifest" href="/manifest.json">
   <link rel="icon" type="image/png" href="/icons/icon-192x192.png">
   <link rel="apple-touch-icon" href="/icons/icon-192x192.png">
+
+  <!-- Styles -->
   <link rel="stylesheet" href="/styles.css">
+  <link rel="stylesheet" href="/animations.css">
+
+  <!-- Scripts -->
   <script src="/dark-mode.js"></script>
+  <script type="module">
+    // Initialize Web Vitals monitoring
+    import { initWebVitals } from './utils/vitals.js';
+    initWebVitals({
+      logToConsole: true,
+      sendToAnalytics: false, // Enable when analytics endpoint is ready
+    });
+  </script>
 </head>
 <body>
   <!-- App Container -->
