@@ -119,6 +119,15 @@ Built on **Cloudflare's free tier** (Workers, Pages, D1, KV, R2) for **zero-cost
   - Vite bundling with code splitting and tree shaking
   - **Result: ~35% smaller bundle, ~50% faster load times**
 
+- **Advanced Utilities** ⭐NEW
+  - Optimistic UI updates with automatic rollback
+  - Debounce/throttle for performance
+  - Request deduplication and offline queue
+  - Analytics tracking with privacy focus
+  - Keyboard shortcuts manager
+  - Error boundaries and circuit breakers
+  - **See [UTILITIES.md](./UTILITIES.md) for complete guide**
+
 ## Getting Started
 
 ### Prerequisites
