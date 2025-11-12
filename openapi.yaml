@@ -1,0 +1,1611 @@
+openapi: 3.0.3
+info:
+  title: KitchenEye API
+  description: |
+    Complete API documentation for the KitchenEye multi-tenant smart kitchen monitoring platform.
+
+    ## Overview
+    KitchenEye provides computer vision-based monitoring for commercial kitchens with:
+    - Gas level monitoring with automatic calibration
+    - Fridge inventory tracking with object detection
+    - Smart recipe matching based on available ingredients
+    - Multi-tenant SaaS architecture with RBAC
+    - Real-time alerts and notifications
+
+    ## Authentication
+    All API endpoints (except `/api/auth/signup` and `/api/ingest`) require JWT authentication.
+
+    Include the JWT token in the Authorization header:
+    ```
+    Authorization: Bearer YOUR_JWT_TOKEN
+    ```
+
+    ## Rate Limiting
+    - IP-based: 100 requests/minute
+    - Tenant-based: 1000 requests/hour
+    - Camera-based: 60 requests/minute
+
+    ## Base URL
+    ```
+    https://your-worker.workers.dev
+    ```
+
+  version: 1.0.0
+  contact:
+    name: KitchenEye Support
+    email: support@kitcheneye.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.kitcheneye.com
+    description: Production server
+  - url: http://localhost:8787
+    description: Local development server
+
+tags:
+  - name: Authentication
+    description: User authentication and account creation
+  - name: Tenants
+    description: Tenant and team management
+  - name: Cameras
+    description: Camera configuration and monitoring
+  - name: Inventory
+    description: Fridge inventory management
+  - name: Recipes
+    description: Recipe discovery and matching
+  - name: Profiles
+    description: User profiles and dietary preferences
+  - name: Notifications
+    description: Alert and notification management
+  - name: Reports
+    description: Analytics and data exports
+  - name: Status
+    description: System health and monitoring
+  - name: Ingest
+    description: Edge device data ingestion (HMAC-authenticated)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token obtained from magic link authentication
+
+    HMACAuth:
+      type: apiKey
+      in: header
+      name: X-Signature
+      description: HMAC-SHA256 signature for edge device authentication
+
+  schemas:
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Invalid credentials
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        email:
+          type: string
+          format: email
+          example: user@example.com
+        name:
+          type: string
+          example: John Doe
+        role:
+          type: string
+          enum: [owner, admin, ops, viewer]
+          example: owner
+        tenant_id:
+          type: integer
+          example: 1
+        created_at:
+          type: string
+          format: date-time
+
+    Tenant:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Acme Restaurant
+        status:
+          type: string
+          enum: [trial, active, suspended, cancelled]
+          example: active
+        created_at:
+          type: string
+          format: date-time
+
+    Camera:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        tenant_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Main Kitchen Gas Monitor
+        type:
+          type: string
+          enum: [gas, fridge]
+          example: gas
+        location:
+          type: string
+          example: Kitchen A
+        status:
+          type: string
+          enum: [active, inactive, error]
+          example: active
+        schedule:
+          type: string
+          example: "*/15 * * * *"
+        config:
+          type: object
+          additionalProperties: true
+        last_capture_at:
+          type: string
+          format: date-time
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+
+    InventoryItem:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        tenant_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Tomato
+        category:
+          type: string
+          example: vegetable
+        quantity:
+          type: integer
+          example: 5
+        unit:
+          type: string
+          example: pieces
+        status:
+          type: string
+          enum: [available, low, out]
+          example: available
+        last_detected_at:
+          type: string
+          format: date-time
+        confidence:
+          type: number
+          format: float
+          example: 0.95
+
+    Recipe:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Pasta Carbonara
+        description:
+          type: string
+          example: Classic Italian pasta dish
+        image_url:
+          type: string
+          format: uri
+          nullable: true
+        ingredients:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              quantity:
+                type: string
+              unit:
+                type: string
+        instructions:
+          type: array
+          items:
+            type: string
+        cooking_time:
+          type: integer
+          example: 20
+        difficulty:
+          type: string
+          enum: [easy, medium, hard]
+        tags:
+          type: array
+          items:
+            type: string
+        intents:
+          type: array
+          items:
+            type: string
+        match_score:
+          type: number
+          format: float
+          example: 0.85
+
+    Alert:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        tenant_id:
+          type: integer
+          example: 1
+        camera_id:
+          type: integer
+          example: 1
+        type:
+          type: string
+          example: gas_level_low
+        severity:
+          type: string
+          enum: [low, medium, high, critical]
+          example: high
+        message:
+          type: string
+          example: Gas level is below 20%
+        details:
+          type: object
+          additionalProperties: true
+        status:
+          type: string
+          enum: [new, acknowledged, resolved]
+          example: new
+        created_at:
+          type: string
+          format: date-time
+
+    Profile:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        tenant_id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: John's Profile
+        dietary_restrictions:
+          type: array
+          items:
+            type: string
+          example: [vegetarian, gluten-free]
+        allergies:
+          type: array
+          items:
+            type: string
+          example: [nuts, shellfish]
+        preferences:
+          type: object
+          additionalProperties: true
+        created_at:
+          type: string
+          format: date-time
+
+paths:
+  # =================================================================
+  # AUTHENTICATION
+  # =================================================================
+  /api/auth/signup:
+    post:
+      tags: [Authentication]
+      summary: Create new account
+      description: Creates a new tenant account with owner user and sends magic link email
+      operationId: signup
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, tenant_name, owner_name]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: owner@restaurant.com
+                tenant_name:
+                  type: string
+                  example: Acme Restaurant
+                owner_name:
+                  type: string
+                  example: John Doe
+      responses:
+        '201':
+          description: Account created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Account created. Check your email for login link.
+                  token:
+                    type: string
+                    description: JWT token for immediate authentication
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '409':
+          description: Email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/send-magic-link:
+    post:
+      tags: [Authentication]
+      summary: Request magic link
+      description: Sends a magic link to user's email for authentication
+      operationId: sendMagicLink
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email]
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: user@restaurant.com
+      responses:
+        '200':
+          description: Magic link sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Magic link sent to your email
+        '404':
+          description: User not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/auth/verify:
+    get:
+      tags: [Authentication]
+      summary: Verify JWT token
+      description: Verifies the current JWT token and returns user information
+      operationId: verifyToken
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Token is valid
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  user:
+                    $ref: '#/components/schemas/User'
+        '401':
+          description: Invalid or expired token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # =================================================================
+  # TENANTS
+  # =================================================================
+  /api/tenants/me:
+    get:
+      tags: [Tenants]
+      summary: Get current tenant
+      description: Returns information about the current user's tenant
+      operationId: getTenant
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Tenant information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    patch:
+      tags: [Tenants]
+      summary: Update tenant
+      description: Updates tenant information (admin/owner only)
+      operationId: updateTenant
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: Updated Restaurant Name
+      responses:
+        '200':
+          description: Tenant updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tenant'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Forbidden - Insufficient permissions
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/tenants/members:
+    get:
+      tags: [Tenants]
+      summary: List team members
+      description: Returns all team members for the current tenant
+      operationId: listMembers
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of team members
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  members:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/User'
+
+    post:
+      tags: [Tenants]
+      summary: Invite team member
+      description: Invites a new team member (admin/owner only)
+      operationId: inviteMember
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, name, role]
+              properties:
+                email:
+                  type: string
+                  format: email
+                name:
+                  type: string
+                role:
+                  type: string
+                  enum: [admin, ops, viewer]
+      responses:
+        '201':
+          description: Member invited
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  user:
+                    $ref: '#/components/schemas/User'
+        '403':
+          description: Forbidden - Insufficient permissions
+
+  /api/tenants/members/{userId}:
+    patch:
+      tags: [Tenants]
+      summary: Update team member
+      description: Updates team member role (admin/owner only)
+      operationId: updateMember
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                role:
+                  type: string
+                  enum: [admin, ops, viewer]
+                name:
+                  type: string
+      responses:
+        '200':
+          description: Member updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '403':
+          description: Forbidden
+        '404':
+          description: Member not found
+
+    delete:
+      tags: [Tenants]
+      summary: Remove team member
+      description: Removes a team member (admin/owner only)
+      operationId: removeMember
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: userId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Member removed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden
+        '404':
+          description: Member not found
+
+  /api/tenants/usage:
+    get:
+      tags: [Tenants]
+      summary: Get usage stats
+      description: Returns current usage statistics for the tenant
+      operationId: getUsage
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Usage statistics
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cameras:
+                    type: object
+                    properties:
+                      used:
+                        type: integer
+                      limit:
+                        type: integer
+                  api_requests:
+                    type: object
+                    properties:
+                      used:
+                        type: integer
+                      limit:
+                        type: integer
+                  storage:
+                    type: object
+                    properties:
+                      used:
+                        type: integer
+                      limit:
+                        type: integer
+
+  # =================================================================
+  # CAMERAS
+  # =================================================================
+  /api/cameras:
+    get:
+      tags: [Cameras]
+      summary: List cameras
+      description: Returns all cameras for the current tenant
+      operationId: listCameras
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: type
+          in: query
+          schema:
+            type: string
+            enum: [gas, fridge]
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [active, inactive, error]
+      responses:
+        '200':
+          description: List of cameras
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  cameras:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Camera'
+
+    post:
+      tags: [Cameras]
+      summary: Create camera
+      description: Creates a new camera (admin/owner/ops only)
+      operationId: createCamera
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, type, location]
+              properties:
+                name:
+                  type: string
+                type:
+                  type: string
+                  enum: [gas, fridge]
+                location:
+                  type: string
+                schedule:
+                  type: string
+                  example: "*/15 * * * *"
+                config:
+                  type: object
+      responses:
+        '201':
+          description: Camera created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Camera'
+        '403':
+          description: Forbidden
+
+  /api/cameras/{cameraId}:
+    get:
+      tags: [Cameras]
+      summary: Get camera
+      description: Returns a specific camera by ID
+      operationId: getCamera
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: cameraId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Camera details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Camera'
+        '404':
+          description: Camera not found
+
+    patch:
+      tags: [Cameras]
+      summary: Update camera
+      description: Updates camera configuration (admin/owner/ops only)
+      operationId: updateCamera
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: cameraId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                location:
+                  type: string
+                schedule:
+                  type: string
+                config:
+                  type: object
+                status:
+                  type: string
+                  enum: [active, inactive]
+      responses:
+        '200':
+          description: Camera updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Camera'
+        '403':
+          description: Forbidden
+        '404':
+          description: Camera not found
+
+    delete:
+      tags: [Cameras]
+      summary: Delete camera
+      description: Deletes a camera (admin/owner only)
+      operationId: deleteCamera
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: cameraId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Camera deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '403':
+          description: Forbidden
+        '404':
+          description: Camera not found
+
+  /api/cameras/{cameraId}/calibrate:
+    post:
+      tags: [Cameras]
+      summary: Calibrate camera
+      description: Triggers calibration for a gas level camera
+      operationId: calibrateCamera
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: cameraId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [level]
+              properties:
+                level:
+                  type: number
+                  format: float
+                  example: 100.0
+                  description: Current gas level percentage (0-100)
+      responses:
+        '200':
+          description: Calibration successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  calibration:
+                    type: object
+        '400':
+          description: Invalid calibration data
+        '404':
+          description: Camera not found
+
+  # =================================================================
+  # INVENTORY
+  # =================================================================
+  /api/inventory:
+    get:
+      tags: [Inventory]
+      summary: List inventory
+      description: Returns all inventory items for the current tenant
+      operationId: listInventory
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [available, low, out]
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: List of inventory items
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/InventoryItem'
+
+    post:
+      tags: [Inventory]
+      summary: Add inventory item
+      description: Manually adds an inventory item
+      operationId: addInventoryItem
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, quantity]
+              properties:
+                name:
+                  type: string
+                category:
+                  type: string
+                quantity:
+                  type: integer
+                unit:
+                  type: string
+      responses:
+        '201':
+          description: Item added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+
+  /api/inventory/{itemId}:
+    patch:
+      tags: [Inventory]
+      summary: Update inventory item
+      description: Updates inventory item details
+      operationId: updateInventoryItem
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                quantity:
+                  type: integer
+                status:
+                  type: string
+                  enum: [available, low, out]
+      responses:
+        '200':
+          description: Item updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InventoryItem'
+        '404':
+          description: Item not found
+
+    delete:
+      tags: [Inventory]
+      summary: Delete inventory item
+      description: Removes an inventory item
+      operationId: deleteInventoryItem
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: itemId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Item deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Item not found
+
+  # =================================================================
+  # RECIPES
+  # =================================================================
+  /api/recipes:
+    get:
+      tags: [Recipes]
+      summary: Search recipes
+      description: Searches recipes with optional filters
+      operationId: searchRecipes
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: q
+          in: query
+          description: Search query
+          schema:
+            type: string
+        - name: intent
+          in: query
+          description: Filter by intent (fresh, quick, protein, etc.)
+          schema:
+            type: string
+        - name: available
+          in: query
+          description: Only show recipes with available ingredients
+          schema:
+            type: boolean
+        - name: profile_id
+          in: query
+          description: Filter by dietary profile
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: List of recipes
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  recipes:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Recipe'
+
+  /api/recipes/{recipeId}:
+    get:
+      tags: [Recipes]
+      summary: Get recipe
+      description: Returns detailed recipe information
+      operationId: getRecipe
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: recipeId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Recipe details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Recipe'
+        '404':
+          description: Recipe not found
+
+  # =================================================================
+  # PROFILES
+  # =================================================================
+  /api/profiles:
+    get:
+      tags: [Profiles]
+      summary: List profiles
+      description: Returns all dietary profiles for the current tenant
+      operationId: listProfiles
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of profiles
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  profiles:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Profile'
+
+    post:
+      tags: [Profiles]
+      summary: Create profile
+      description: Creates a new dietary profile
+      operationId: createProfile
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name:
+                  type: string
+                dietary_restrictions:
+                  type: array
+                  items:
+                    type: string
+                allergies:
+                  type: array
+                  items:
+                    type: string
+                preferences:
+                  type: object
+      responses:
+        '201':
+          description: Profile created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+
+  /api/profiles/{profileId}:
+    get:
+      tags: [Profiles]
+      summary: Get profile
+      description: Returns a specific profile by ID
+      operationId: getProfile
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Profile details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '404':
+          description: Profile not found
+
+    patch:
+      tags: [Profiles]
+      summary: Update profile
+      description: Updates profile settings
+      operationId: updateProfile
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                dietary_restrictions:
+                  type: array
+                  items:
+                    type: string
+                allergies:
+                  type: array
+                  items:
+                    type: string
+                preferences:
+                  type: object
+      responses:
+        '200':
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Profile'
+        '404':
+          description: Profile not found
+
+    delete:
+      tags: [Profiles]
+      summary: Delete profile
+      description: Deletes a dietary profile
+      operationId: deleteProfile
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: profileId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Profile deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Profile not found
+
+  # =================================================================
+  # NOTIFICATIONS
+  # =================================================================
+  /api/notifications/alerts:
+    get:
+      tags: [Notifications]
+      summary: List alerts
+      description: Returns alerts for the current tenant
+      operationId: listAlerts
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [new, acknowledged, resolved]
+        - name: severity
+          in: query
+          schema:
+            type: string
+            enum: [low, medium, high, critical]
+        - name: camera_id
+          in: query
+          schema:
+            type: integer
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: List of alerts
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  alerts:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Alert'
+
+  /api/notifications/alerts/{alertId}/acknowledge:
+    post:
+      tags: [Notifications]
+      summary: Acknowledge alert
+      description: Marks an alert as acknowledged
+      operationId: acknowledgeAlert
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: alertId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Alert acknowledged
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        '404':
+          description: Alert not found
+
+  /api/notifications/preferences:
+    get:
+      tags: [Notifications]
+      summary: Get notification preferences
+      description: Returns notification preferences for current user
+      operationId: getNotificationPreferences
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Notification preferences
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  email_enabled:
+                    type: boolean
+                  push_enabled:
+                    type: boolean
+                  alert_types:
+                    type: array
+                    items:
+                      type: string
+
+    patch:
+      tags: [Notifications]
+      summary: Update notification preferences
+      description: Updates notification preferences for current user
+      operationId: updateNotificationPreferences
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email_enabled:
+                  type: boolean
+                push_enabled:
+                  type: boolean
+                alert_types:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: Preferences updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /api/notifications/subscribe:
+    post:
+      tags: [Notifications]
+      summary: Subscribe to push notifications
+      description: Subscribes to web push notifications
+      operationId: subscribePush
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [subscription]
+              properties:
+                subscription:
+                  type: object
+                  description: Web Push subscription object
+      responses:
+        '200':
+          description: Subscribed successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  # =================================================================
+  # REPORTS
+  # =================================================================
+  /api/reports/export:
+    post:
+      tags: [Reports]
+      summary: Generate report
+      description: Generates and exports a report in specified format
+      operationId: generateReport
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [type, format]
+              properties:
+                type:
+                  type: string
+                  enum: [missing_items, consumption, gas_level, alerts]
+                format:
+                  type: string
+                  enum: [csv, json]
+                start_date:
+                  type: string
+                  format: date
+                end_date:
+                  type: string
+                  format: date
+                filters:
+                  type: object
+      responses:
+        '200':
+          description: Report generated
+          content:
+            text/csv:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: object
+        '400':
+          description: Invalid parameters
+
+  /api/reports/missing-items:
+    get:
+      tags: [Reports]
+      summary: Get missing items
+      description: Returns list of missing ingredients for available recipes
+      operationId: getMissingItems
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Missing items list
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  missing_items:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                        needed_for_recipes:
+                          type: integer
+
+  # =================================================================
+  # STATUS
+  # =================================================================
+  /api/status:
+    get:
+      tags: [Status]
+      summary: Get system status
+      description: Returns overall system health status
+      operationId: getStatus
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: System status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: healthy
+                  cameras:
+                    type: object
+                    properties:
+                      total:
+                        type: integer
+                      active:
+                        type: integer
+                      offline:
+                        type: integer
+                  alerts:
+                    type: object
+                    properties:
+                      new:
+                        type: integer
+                      critical:
+                        type: integer
+                  last_capture:
+                    type: string
+                    format: date-time
+
+  /api/status/cameras/{cameraId}:
+    get:
+      tags: [Status]
+      summary: Get camera status
+      description: Returns detailed status for a specific camera
+      operationId: getCameraStatus
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: cameraId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Camera status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  camera_id:
+                    type: integer
+                  status:
+                    type: string
+                  last_capture:
+                    type: string
+                    format: date-time
+                  recent_readings:
+                    type: array
+                    items:
+                      type: object
+        '404':
+          description: Camera not found
+
+  # =================================================================
+  # INGEST (Edge Device Data)
+  # =================================================================
+  /api/ingest:
+    post:
+      tags: [Ingest]
+      summary: Ingest camera data
+      description: |
+        Receives data from edge CV devices. Requires HMAC authentication.
+
+        ### HMAC Authentication
+        Calculate HMAC-SHA256 signature of the request body using the camera's secret key.
+        Include signature in X-Signature header.
+
+        ```python
+        import hmac
+        import hashlib
+
+        signature = hmac.new(
+            camera_secret.encode(),
+            json.dumps(payload).encode(),
+            hashlib.sha256
+        ).hexdigest()
+        ```
+      operationId: ingestData
+      security:
+        - HMACAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [camera_id, type, timestamp, data]
+              properties:
+                camera_id:
+                  type: integer
+                  example: 1
+                type:
+                  type: string
+                  enum: [gas_level, fridge_inventory]
+                  example: gas_level
+                timestamp:
+                  type: string
+                  format: date-time
+                data:
+                  type: object
+                  description: Type-specific data payload
+                  example:
+                    level: 45.5
+                    confidence: 0.92
+                image_url:
+                  type: string
+                  format: uri
+                  description: R2 URL of captured image
+      responses:
+        '200':
+          description: Data ingested successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  processed:
+                    type: object
+        '400':
+          description: Invalid data format
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Invalid HMAC signature
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Rate limit exceeded
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+security:
+  - BearerAuth: []
